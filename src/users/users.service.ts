@@ -15,18 +15,18 @@ export class UsersService {
   }
 
   findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    return this.userModel.find({}).exec();
   }
 
   findOne(id: string): Promise<User> {
-    return this.userModel.findById(id);
+    return this.userModel.findById(id).exec();
   }
 
   update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    return this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+    return this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).exec();
   }
 
   remove(id: string): Promise<User> {
-    return this.userModel.findByIdAndRemove(id);
+    return this.userModel.findByIdAndDelete(id).exec();
   }
 }
