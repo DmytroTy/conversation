@@ -11,6 +11,9 @@ export class Message {
   @Prop()
   text: string;
 
+  @Prop({ type: Date, default: Date.now })
+  date: Date;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   user: User;
 
