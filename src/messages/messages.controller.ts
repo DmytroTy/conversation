@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { Message } from './message.schema';
@@ -14,8 +14,8 @@ export class MessagesController {
   }
 
   @Get()
-  findAll(): Promise<Message[]> {
-    return this.messagesService.findAll();
+  findAll(@Query('conversationID') conversationID: string): Promise<Message[]> {
+    return this.messagesService.findAllByConversation(conversationID);
   }
 
   @Get(':id')

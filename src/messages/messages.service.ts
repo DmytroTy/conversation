@@ -10,12 +10,19 @@ export class MessagesService {
   constructor(@InjectModel(Message.name) private messageModel: Model<MessageDocument>) {}
 
   create(createMessageDto: CreateMessageDto): Promise<Message> {
-    const createdMessage = new this.messageModel(createMessageDto);
+    const { conversationID, userID, text } = createMessageDto;
+    const createdMessage = new this.messageModel({ text, user: userID, conversation: conversationID });
+
     return createdMessage.save();
+
+    /* const conversation = await this.conversationModel.findById(conversationID).exec();
+    conversation.messages.push({ text, user: userID });
+    conversation.save();
+    return  */
   }
 
-  findAll(): Promise<Message[]> {
-    return this.messageModel.find({}).exec();
+  findAllByConversation(conversationID: string): Promise<Message[]> {
+    return this.messageModel.find({ conversation: conversationID }).exec();
   }
 
   findOne(id: string): Promise<Message> {
