@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { Message } from '../messages/message.schema';
+import { User } from '../users/user.schema';
 
 export type ConversationDocument = Conversation & Document;
 
@@ -9,6 +9,15 @@ export type ConversationDocument = Conversation & Document;
 export class Conversation {
   @Prop()
   name: string;
+
+  @Prop()
+  unread: boolean;
+
+  @Prop({
+    type: Map,
+    of: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  })
+  users: Map<String, User>;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }] })
   messages: Message[];
