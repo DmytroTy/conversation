@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
         family: 4,
       }),
     }),
+    AuthModule,
     ConversationsModule,
     MessagesModule,
     UsersModule,

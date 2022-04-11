@@ -18,8 +18,8 @@ export class UsersService {
     return this.userModel.find({}).exec();
   }
 
-  findOne(id: string): Promise<User> {
-    return this.userModel.findById(id).exec();
+  findOne(email: string): Promise<User> {
+    return this.userModel.findOne({ email }).exec();
   }
 
   update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
