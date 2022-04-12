@@ -1,14 +1,19 @@
 import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { WsException } from '@nestjs/websockets';
 import * as bcrypt from 'bcrypt';
-import { User } from '../users/user.schema';
+import { ConversationsService } from '../conversations/conversations.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { User } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly configService: ConfigService,
     private jwtService: JwtService,
+    private readonly conversationsService: ConversationsService,
     private usersService: UsersService,
   ) {}
 
@@ -44,5 +49,23 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async authenticateUser(token: string, conversationID: string) {
+    const payload = this.jwtService.verify(token, {
+      ignoreExpiration: false,
+      secret: this.configService.get<string>('JWT_SECRET_KEY'),
+    });
+    if (!payload.userId) {
+      throw new WsException('Unauthorized');
+      
+    }
+    const conversation = await this.conversationsService.findOne(conversationID);
+    if (!conversation.users.get(payload.userId)) {
+      throw new WsException('Forbidden');
+      
+    }
+
+    return true;
   }
 }

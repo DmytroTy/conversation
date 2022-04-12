@@ -29,7 +29,13 @@ const app = new Vue({
     this.socket = io('http://localhost:8080', {
       query: {
         conversationID: '6246cd493a7e872c53582fcc',
-      }
+      },
+      auth: {
+        token: 'abcd',
+      },
+      /* extraHeaders: {
+        Authorization: 'Bearer 1234',
+      }, */
     });
     this.socket.on('newMessage', (message) => {
       this.receivedMessage(message);

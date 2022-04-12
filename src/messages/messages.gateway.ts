@@ -1,7 +1,6 @@
-import { Req } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { Request } from "express";
 import { Socket } from 'socket.io';
+import { AuthService } from '../auth/auth.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { Message } from './message.schema';
@@ -13,13 +12,23 @@ import { MessagesService } from './messages.service';
   },
 })
 export class MessagesGateway implements OnGatewayConnection {
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(
+    private readonly messagesService: MessagesService,
+    private authService: AuthService,
+  ) {}
 
-  handleConnection(client: any /* , @Req() req: Request */) {
-    client.join(client.handshake.query.conversationID);
+  async handleConnection(client: any) {
+    const conversationID = client.handshake.query.conversationID;
+
+    try {
+      await this.authService.authenticateUser(client.handshake.auth.token, conversationID);
+    } catch (err) {
+      return err;
+    }
+
+    client.join(conversationID);
 
     // client.handshake.headers.authorization;
-    // client.handshake.query.conversationID;
   }
 
   @SubscribeMessage('createMessage')
