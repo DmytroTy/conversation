@@ -8,6 +8,8 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
 
+const MONGODB_DUPLICATE_KEY_ERROR_CODE = 11000;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -45,6 +47,9 @@ export class AuthService {
       user = await this.usersService.create(createUserDto);
       delete user.password;
     } catch (err) {
+      if (err.code === MONGODB_DUPLICATE_KEY_ERROR_CODE) {
+        throw new ConflictException('A user with this email already exists!');
+      }
       throw new InternalServerErrorException('Failed to create user account, please try again later.');
     }
 
@@ -52,18 +57,21 @@ export class AuthService {
   }
 
   async authenticateUser(token: string, conversationID: string) {
-    const payload = this.jwtService.verify(token, {
-      ignoreExpiration: false,
-      secret: this.configService.get<string>('JWT_SECRET_KEY'),
-    });
-    if (!payload.userId) {
-      throw new WsException('Unauthorized');
+    let payload;
+    try {
+      payload = this.jwtService.verify(token, {
+        ignoreExpiration: false,
+        secret: this.configService.get<string>('JWT_SECRET_KEY'),
+      });
+    } catch (err) {
       
+      throw new WsException('Unauthorized: invalid JWT token!');
     }
+
     const conversation = await this.conversationsService.findOne(conversationID);
-    if (!conversation.users.get(payload.userId)) {
-      throw new WsException('Forbidden');
+    if (!conversation.users.get(payload.sub)) {
       
+      throw new WsException('Forbidden');
     }
 
     return true;
