@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import * as bcrypt from 'bcrypt';
 import { ConversationsService } from '../conversations/conversations.service';
+import { LoggerWinston } from '../logger/logger-winston.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
@@ -16,6 +17,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private jwtService: JwtService,
     private readonly conversationsService: ConversationsService,
+    private readonly logger: LoggerWinston,
     private usersService: UsersService,
   ) {}
 
@@ -48,8 +50,10 @@ export class AuthService {
       delete user.password;
     } catch (err) {
       if (err.code === MONGODB_DUPLICATE_KEY_ERROR_CODE) {
+        this.logger.warn(`User error: ${err.message}`, 'AuthService');
         throw new ConflictException('A user with this email already exists!');
       }
+      this.logger.error(`Important error: ${err.message}`, 'AuthService', err);
       throw new InternalServerErrorException('Failed to create user account, please try again later.');
     }
 
@@ -64,14 +68,14 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_SECRET_KEY'),
       });
     } catch (err) {
-      
+      this.logger.warn(`Unauthorized: ${err.message}`, 'AuthService');
       throw new WsException('Unauthorized: invalid JWT token!');
     }
 
     const conversation = await this.conversationsService.findOne(conversationID);
     if (!conversation.users.get(payload.sub)) {
-      
-      throw new WsException('Forbidden');
+      this.logger.warn(`User error: forbidden access for user with id=${payload.sub} to conversation with id=${conversationID}`, 'AuthService');
+      throw new WsException('Forbidden!');
     }
 
     return true;

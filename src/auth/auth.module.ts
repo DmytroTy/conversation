@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConversationsModule } from '../conversations/conversations.module';
+import { LoggerModule } from '../logger/logger.module';
 import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -21,6 +22,7 @@ import { LocalStrategy } from './strategies/local.strategy';
     ConfigModule,
     PassportModule,
     ConversationsModule,
+    LoggerModule,
     UsersModule,
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
