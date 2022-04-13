@@ -15,7 +15,7 @@ export class UsersService {
   }
 
   findAll(): Promise<User[]> {
-    return this.userModel.find({}).exec();
+    return this.userModel.find({}, 'name _id').exec();
   }
 
   findOne(email: string): Promise<User> {
