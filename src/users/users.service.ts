@@ -15,11 +15,15 @@ export class UsersService {
   }
 
   findAll(): Promise<User[]> {
-    return this.userModel.find({}, 'name _id').exec();
+    return this.userModel.find({}, '_id name').exec();
   }
 
   findOne(email: string): Promise<User> {
     return this.userModel.findOne({ email }).exec();
+  }
+
+  findById(id: string): Promise<User> {
+    return this.userModel.findById(id, '_id name').exec();
   }
 
   update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
