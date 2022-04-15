@@ -13,7 +13,7 @@ const app = new Vue({
         const message = {
           // name: this.name,
           text: this.text,
-          userID: '',
+          userID: '6256b435a342be12b1e3cc16',
           conversationID: '6259421b51c80e9197cb028e',
         };
       this.socket.emit('createMessage', message);
