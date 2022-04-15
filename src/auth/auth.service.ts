@@ -73,11 +73,12 @@ export class AuthService {
     }
 
     const conversation = await this.conversationsService.findOne(conversationID);
-    if (!conversation.users.get(payload.sub)) {
+    
+    if (!conversation.users || !conversation.users.get(payload.sub)) {
       this.logger.warn(`User error: forbidden access for user with id=${payload.sub} to conversation with id=${conversationID}`, 'AuthService');
       throw new WsException('Forbidden!');
     }
 
-    return true;
+    return payload.sub;
   }
 }

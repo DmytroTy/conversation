@@ -11,8 +11,10 @@ const app = new Vue({
     sendMessage() {
       if(this.validateInput()) {
         const message = {
-          name: this.name,
-          text: this.text
+          // name: this.name,
+          text: this.text,
+          userID: '',
+          conversationID: '6259421b51c80e9197cb028e',
         };
       this.socket.emit('createMessage', message);
       this.text = '';
@@ -28,7 +30,7 @@ const app = new Vue({
   created() {
     this.socket = io('http://localhost:8080', {
       query: {
-        conversationID: '6246cd493a7e872c53582fcc',
+        conversationID: '6259421b51c80e9197cb028e',
       },
       auth: {
         token: 'abcd',
