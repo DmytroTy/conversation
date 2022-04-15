@@ -13,8 +13,8 @@ import { MessagesService } from './messages.service';
 })
 export class MessagesGateway implements OnGatewayConnection {
   constructor(
-    private readonly messagesService: MessagesService,
     private authService: AuthService,
+    private readonly messagesService: MessagesService,
   ) {}
 
   async handleConnection(client: any) {
@@ -40,8 +40,8 @@ export class MessagesGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('getMessages')
-  findAll(@MessageBody('conversationID') conversationID: string): Promise<Message[]> {
-    return this.messagesService.findAllByConversation(conversationID);
+  findAll(@MessageBody('conversationID') conversationID: string, @ConnectedSocket() client: Socket): Promise<Message[]> {
+    return this.messagesService.findAllByConversationID(conversationID, client.handshake.auth.token);
   }
 
   @SubscribeMessage('updateMessage')
