@@ -14,6 +14,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('profile')
+  async getProfile(@Req() req): Promise<User> {
+    return this.usersService.findOne(req.user.email);
+  }
+
   @Patch('profile')
   update(@Body() updateUserDto: UpdateUserDto, @Req() req): Promise<User> {
     return this.usersService.update(req.user.userId, updateUserDto);
