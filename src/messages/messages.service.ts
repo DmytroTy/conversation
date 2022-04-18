@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Socket } from 'socket.io';
-import { AuthService } from '../auth/auth.service';
 import { Conversation, ConversationDocument } from '../conversations/conversation.schema';
 import { ConversationsService } from '../conversations/conversations.service';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -12,7 +11,6 @@ import { Message, MessageDocument } from './message.schema';
 @Injectable()
 export class MessagesService {
   constructor(
-    private authService: AuthService,
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConversationDocument>,
     private readonly conversationsService: ConversationsService,
@@ -21,7 +19,8 @@ export class MessagesService {
   ) {}
 
   async create(createMessageDto: CreateMessageDto, client: Socket): Promise<Message> {
-    const { conversationID, userID, text } = createMessageDto;
+    const { text } = createMessageDto;
+    const { conversationID, userID } = client.data;
     const createdMessage = new this.messageModel({ text, user: userID, conversation: conversationID });
     const message = await createdMessage.save()
 
@@ -38,8 +37,8 @@ export class MessagesService {
     return  */
   }
 
-  async findAllByConversationID(conversationID: string, authToken: string): Promise<Message[]> {
-    const userID = await this.authService.authenticateUser(authToken, conversationID);
+  async findAll(client: Socket): Promise<Message[]> {
+    const { conversationID, userID } = client.data;
     const conversation = await this.conversationsService.findOne(conversationID);
     if (conversation.unreadMessageFromUser !== userID) {
       await this.conversationModel.findByIdAndUpdate(conversationID, { unreadMessageFromUser: null }).exec();

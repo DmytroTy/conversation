@@ -1,5 +1,5 @@
-import { ConnectedSocket, MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -17,18 +17,20 @@ export class MessagesGateway implements OnGatewayConnection {
     private readonly messagesService: MessagesService,
   ) {}
 
+  /* @WebSocketServer()
+  server: Server; */
+
   async handleConnection(client: any) {
     const conversationID = client.handshake.query.conversationID;
 
     try {
-      await this.authService.authenticateUser(client.handshake.auth.token, conversationID);
+      client.data.userID = await this.authService.authenticateUser(client.handshake.auth.token, conversationID);
+      client.data.conversationID = conversationID;
     } catch (err) {
       return err;
     }
 
     client.join(conversationID);
-
-    // client.handshake.headers.authorization;
   }
 
   @SubscribeMessage('createMessage')
@@ -40,8 +42,8 @@ export class MessagesGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('getMessages')
-  findAll(@MessageBody('conversationID') conversationID: string, @ConnectedSocket() client: Socket): Promise<Message[]> {
-    return this.messagesService.findAllByConversationID(conversationID, client.handshake.auth.token);
+  findAll(@ConnectedSocket() client: Socket): Promise<Message[]> {
+    return this.messagesService.findAll(client);
   }
 
   @SubscribeMessage('updateMessage')
