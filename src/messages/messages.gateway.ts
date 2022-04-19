@@ -47,12 +47,12 @@ export class MessagesGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('updateMessage')
-  update(@MessageBody() updateMessageDto: UpdateMessageDto): Promise<Message> {
-    return this.messagesService.update(updateMessageDto);
+  update(@MessageBody() updateMessageDto: UpdateMessageDto, @ConnectedSocket() client: Socket): Promise<Message> {
+    return this.messagesService.update(updateMessageDto, client);
   }
 
   @SubscribeMessage('deleteMessage')
-  remove(@MessageBody('_id') id: string): Promise<Message> {
-    return this.messagesService.remove(id);
+  remove(@MessageBody('_id') id: string, @ConnectedSocket() client: Socket): Promise<Message> {
+    return this.messagesService.remove(id, client);
   }
 }

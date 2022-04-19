@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module';
-import { ConversationsModule } from '../conversations/conversations.module';
 import { Conversation, ConversationSchema } from '../conversations/conversation.schema';
+import { ConversationsModule } from '../conversations/conversations.module';
+import { LoggerModule } from '../logger/logger.module';
 import { Message, MessageSchema } from './message.schema';
 import { MessagesGateway } from './messages.gateway';
 import { MessagesService } from './messages.service';
@@ -15,6 +16,7 @@ import { MessagesService } from './messages.service';
     ]),
     AuthModule,
     ConversationsModule,
+    LoggerModule,
   ],
   providers: [MessagesGateway, MessagesService],
 })
