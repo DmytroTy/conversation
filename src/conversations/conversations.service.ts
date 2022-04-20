@@ -40,7 +40,7 @@ export class ConversationsService {
   }
 
   findOne(id: string): Promise<Conversation> {
-    return this.conversationModel.findById(id).exec();
+    return this.conversationModel.findById(id).populate('messages').exec();
   }
 
   update(id: string, updateConversationDto: UpdateConversationDto): Promise<Conversation> {

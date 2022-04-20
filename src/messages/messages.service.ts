@@ -36,26 +36,29 @@ export class MessagesService {
     const createdMessage = new this.messageModel({ text, user: userID, conversation: conversationID });
     const message = await createdMessage.save()
 
-    await this.conversationModel.findByIdAndUpdate(conversationID, { unreadMessageFromUser: userID }).exec();
+    // await this.conversationModel.findByIdAndUpdate(conversationID, { unreadMessageFromUser: userID }).exec();
+
+    const conversation = await this.conversationsService.findOne(conversationID);
+    conversation.messages.push(message);
+    conversation.unreadMessageFromUser = userID;
+    await this.conversationsService.update(conversationID, conversation);
 
     // client.to(conversationID).emit('unread', { unread: true });
     client.to(conversationID).emit('newMessage', { message });
 
     return message;
-
-    /* const conversation = await this.conversationsService.findOne(conversationID);
-    conversation.messages.push({ text, user: userID });
-    conversation.save();
-    return  */
   }
 
   async findAll(client: Socket): Promise<Message[]> {
     const { conversationID, userID } = client.data;
     const conversation = await this.conversationsService.findOne(conversationID);
-    if (conversation.unreadMessageFromUser !== userID) {
+    if (!conversation.unreadMessageFromUser && conversation.unreadMessageFromUser !== userID) {
       await this.conversationModel.findByIdAndUpdate(conversationID, { unreadMessageFromUser: null }).exec();
     }
-    return this.messageModel.find({ conversation: conversationID }).exec();
+
+    // return this.messageModel.find({ conversation: conversationID }).exec();
+
+    return (await this.conversationsService.findOne(conversationID)).messages;
   }
 
   async findOne(id: string, client: Socket): Promise<Message> {
