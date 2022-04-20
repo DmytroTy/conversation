@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ConversationsAccessGuard } from './api/middleware/conversations-access.guard';
 import { Conversation } from './conversation.schema';
 import { ConversationsService } from './conversations.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
@@ -20,16 +21,19 @@ export class ConversationsController {
     return this.conversationsService.findAll();
   }
 
+  @UseGuards(ConversationsAccessGuard)
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Conversation> {
     return this.conversationsService.findOne(id);
   }
 
+  @UseGuards(ConversationsAccessGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateConversationDto: UpdateConversationDto): Promise<Conversation> {
     return this.conversationsService.update(id, updateConversationDto);
   }
 
+  @UseGuards(ConversationsAccessGuard)
   @Delete(':id')
   remove(@Param('id') id: string): Promise<Conversation> {
     return this.conversationsService.remove(id);
