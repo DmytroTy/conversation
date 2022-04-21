@@ -24,7 +24,7 @@ export class MessagesService {
   private async checkUserAccess(id: string, client: Socket): Promise<void> {
     const message = await this.messageModel.findById(id).exec();
 
-    if (message.user !== client.data.userID && message.conversation !== client.data.conversationID) {
+    if (message.user.toString() !== client.data.userID && message.conversation.toString() !== client.data.conversationID) {
       this.logger.warn(`User error: forbidden access for user with id=${client.data.userID} to message with id=${id}`, 'MessagesService');
       throw new WsException('Forbidden!');
     }
@@ -34,7 +34,7 @@ export class MessagesService {
     const { text } = createMessageDto;
     const { conversationID, userID } = client.data;
     const createdMessage = new this.messageModel({ text, user: userID, conversation: conversationID });
-    const message = await createdMessage.save()
+    const message = await createdMessage.save();
 
     // await this.conversationModel.findByIdAndUpdate(conversationID, { unreadMessageFromUser: userID }).exec();
 
@@ -58,7 +58,7 @@ export class MessagesService {
 
     // return this.messageModel.find({ conversation: conversationID }).exec();
 
-    return (await this.conversationsService.findOne(conversationID)).messages;
+    return conversation.messages;
   }
 
   async findOne(id: string, client: Socket): Promise<Message> {

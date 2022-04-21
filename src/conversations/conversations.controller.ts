@@ -17,8 +17,8 @@ export class ConversationsController {
   }
 
   @Get()
-  findAll(): Promise<Conversation[]> {
-    return this.conversationsService.findAll();
+  findAll(@Req() req): Promise<(Conversation | string)[]> {
+    return this.conversationsService.findAll(req.user.userId);
   }
 
   @UseGuards(ConversationsAccessGuard)
@@ -35,7 +35,7 @@ export class ConversationsController {
 
   @UseGuards(ConversationsAccessGuard)
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<Conversation> {
-    return this.conversationsService.remove(id);
+  remove(@Param('id') id: string, @Req() req): Promise<Conversation> {
+    return this.conversationsService.remove(id, req.user.userId);
   }
 }

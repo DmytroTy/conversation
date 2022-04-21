@@ -23,7 +23,7 @@ export class UsersService {
   }
 
   findById(id: string): Promise<User> {
-    return this.userModel.findById(id, '_id name').exec();
+    return this.userModel.findById(id, '_id name myConversations').exec();
   }
 
   update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
