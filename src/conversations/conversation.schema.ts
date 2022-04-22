@@ -21,7 +21,11 @@ export class Conversation {
   })
   users: Map<String, Object>;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }] })
+  @Prop({ type: [{
+    text: String,
+    date: { type: Date, default: Date.now },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  }] })
   messages: Message[];
 }
 

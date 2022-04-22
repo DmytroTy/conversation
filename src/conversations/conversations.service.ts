@@ -45,7 +45,7 @@ export class ConversationsService {
   }
 
   async findOne(id: string): Promise<Conversation> {
-    const conversation = await this.conversationModel.findById(id).populate('messages').exec();
+    const conversation = await this.conversationModel.findById(id).exec();
 
     if (!conversation) {
       this.logger.warn(`User error: Conversation with id = ${id} not found.`, 'ConversationsService');

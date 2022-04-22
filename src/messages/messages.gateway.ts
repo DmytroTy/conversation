@@ -52,7 +52,7 @@ export class MessagesGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('deleteMessage')
-  remove(@MessageBody('_id') id: string, @ConnectedSocket() client: Socket): Promise<Message> {
+  remove(@MessageBody('_id') id: string, @ConnectedSocket() client: Socket): Promise<boolean> {
     return this.messagesService.remove(id, client);
   }
 }

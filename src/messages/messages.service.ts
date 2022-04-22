@@ -8,7 +8,7 @@ import { ConversationsService } from '../conversations/conversations.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { LoggerWinston } from '../logger/logger-winston.service';
-import { Message, MessageDocument } from './message.schema';
+import { Message } from './message.schema';
 
 @Injectable()
 export class MessagesService {
@@ -17,15 +17,11 @@ export class MessagesService {
     private conversationModel: Model<ConversationDocument>,
     private readonly conversationsService: ConversationsService,
     private readonly logger: LoggerWinston,
-    @InjectModel(Message.name)
-    private messageModel: Model<MessageDocument>,
   ) {}
 
-  private async checkUserAccess(id: string, client: Socket): Promise<void> {
-    const message = await this.messageModel.findById(id).exec();
-
-    if (message.user.toString() !== client.data.userID && message.conversation.toString() !== client.data.conversationID) {
-      this.logger.warn(`User error: forbidden access for user with id=${client.data.userID} to message with id=${id}`, 'MessagesService');
+  private checkUserAccess(message: Message, userID: string): void {
+    if (message.user.toString() !== userID) {
+      this.logger.warn(`User error: forbidden access for user with id=${userID} to message with id=${message._id}`, 'MessagesService');
       throw new WsException('Forbidden!');
     }
   }
@@ -33,10 +29,7 @@ export class MessagesService {
   async create(createMessageDto: CreateMessageDto, client: Socket): Promise<Message> {
     const { text } = createMessageDto;
     const { conversationID, userID } = client.data;
-    const createdMessage = new this.messageModel({ text, user: userID, conversation: conversationID });
-    const message = await createdMessage.save();
-
-    // await this.conversationModel.findByIdAndUpdate(conversationID, { unreadMessageFromUser: userID }).exec();
+    const message = { text, user: userID };
 
     const conversation = await this.conversationsService.findOne(conversationID);
     conversation.messages.push(message);
@@ -56,25 +49,35 @@ export class MessagesService {
       await this.conversationModel.findByIdAndUpdate(conversationID, { unreadMessageFromUser: null }).exec();
     }
 
-    // return this.messageModel.find({ conversation: conversationID }).exec();
-
     return conversation.messages;
   }
 
   async findOne(id: string, client: Socket): Promise<Message> {
-    await this.checkUserAccess(id, client);
-    return this.messageModel.findById(id).exec();
+    const conversation = await this.conversationsService.findOne(client.data.conversationID);
+    const message = conversation.messages.find(mesg => (mesg._id.toString() === id));
+    return message;
   }
 
   async update(updateMessageDto: UpdateMessageDto, client: Socket): Promise<Message> {
-    const { _id: id, ...updateMessageData } = updateMessageDto;
-    await this.checkUserAccess(id, client);
-
-    return this.messageModel.findByIdAndUpdate(id, updateMessageData, { new: true }).exec();
+    const conversation = await this.conversationsService.findOne(client.data.conversationID);
+    const message = conversation.messages.find(mesg => {
+      if (mesg._id.toString() === updateMessageDto._id) {
+        this.checkUserAccess(mesg, client.data.userID);
+        mesg = { ...mesg, ...updateMessageDto };
+        return true;
+      }
+      return false;
+    });
+    await this.conversationsService.update(client.data.conversationID, conversation);
+    return message;
   }
 
-  async remove(id: string, client: Socket): Promise<Message> {
-    await this.checkUserAccess(id, client);
-    return this.messageModel.findByIdAndDelete(id).exec();
+  async remove(id: string, client: Socket): Promise<boolean> {
+    const conversation = await this.conversationsService.findOne(client.data.conversationID);
+    conversation.messages = conversation.messages.filter(
+      mesg => (mesg._id.toString() !== id) || (mesg.user.toString() !== client.data.userID)
+    );
+    await this.conversationsService.update(client.data.conversationID, conversation);
+    return true;
   }
 }
