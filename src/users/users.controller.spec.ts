@@ -1,20 +1,29 @@
+import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { MockUserModel } from './testing/mock.user.model';
+import { User } from './user.schema';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
 describe('UsersController', () => {
-  let controller: UsersController;
+  let usersController: UsersController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [UsersService],
+      providers: [
+        UsersService,
+        {
+          provide: getModelToken(User.name),
+          useClass: MockUserModel,
+        },
+      ],
     }).compile();
 
-    controller = module.get<UsersController>(UsersController);
+    usersController = module.get<UsersController>(UsersController);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  it('UsersController should be defined', () => {
+    expect(usersController).toBeDefined();
   });
 });
